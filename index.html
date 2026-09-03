@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GPS Speedometer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #0a0c14;
+            color: #00f3ff;
+            text-align: center;
+            padding: 30px 15px;
+            margin: 0;
+        }
+        .box {
+            border: 2px solid #00f3ff;
+            border-radius: 20px;
+            padding: 20px;
+            max-width: 350px;
+            margin: 0 auto;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.3);
+        }
+        .speed {
+            font-size: 70px;
+            font-weight: bold;
+            color: #ff0055;
+            margin: 20px 0;
+        }
+        button {
+            background: #00f3ff;
+            color: #000;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="box">
+    <h2>⚡ ĐỒNG HỒ GPS XE ĐIỆN 🏎️</h2>
+    <div class="speed" id="speed">0</div>
+    <p>KM/H</p>
+    <hr style="border-color: #333;">
+    <p>Quãng đường: <b id="dist" style="color: #fff;">0.00</b> km</p>
+    <button onclick="startGPS()">🚀 BẮT ĐẦU ĐO</button>
+</div>
+
+<script>
+let watchId = null;
+let lastLat = null, lastLon = null, totalDist = 0;
+
+function startGPS() {
+    if (navigator.geolocation) {
+        watchId = navigator.geolocation.watchPosition(pos => {
+            let speed = Math.round((pos.coords.speed || 0) * 3.6);
+            document.getElementById("speed").innerText = speed < 2 ? 0 : speed;
+            
+            if (lastLat !== null) {
+                let d = calcDist(lastLat, lastLon, pos.coords.latitude, pos.coords.longitude);
+                if (d > 0.002) {
+                    totalDist += d;
+                    document.getElementById("dist").innerText = totalDist.toFixed(2);
+                }
+            }
+            lastLat = pos.coords.latitude;
+            lastLon = pos.coords.longitude;
+        }, null, { enableHighAccuracy: true });
+        alert("Đã kết nối GPS!");
+    }
+}
+
+function calcDist(lat1, lon1, lat2, lon2) {
+    let R = 6371;
+    let dLat = (lat2-lat1)*Math.PI/180;
+    let dLon = (lon2-lon1)*Math.PI/180;
+    let a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+</script>
+
+</body>
+</html>
